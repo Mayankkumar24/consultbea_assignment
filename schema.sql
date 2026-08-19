@@ -20,7 +20,7 @@ CREATE TABLE source_records (
     ingested_at   TIMESTAMP DEFAULT NOW()
 );
 
--- 3. skills — normalized lookup
+-- 3. skills — normalized looku
 CREATE TABLE skills (
     skill_id     SERIAL PRIMARY KEY,
     skill_name   VARCHAR(100) UNIQUE NOT NULL

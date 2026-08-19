@@ -105,6 +105,16 @@ def parse_date_flexible(raw):
     except Exception:
         return None
 
+STATUS_VALUES = {"active", "inactive", "yes", "no", "verified", "pending"}
+
+def looks_like_valid_skills(raw_skill_tags):
+    """Row corruption check: if the 'skill_tags' field actually contains
+    a status word instead of tech skills, the row's columns are rotated."""
+    if pd.isna(raw_skill_tags):
+        return True
+    cleaned = str(raw_skill_tags).strip().lower()
+    return cleaned not in STATUS_VALUES
+
 
 def clean_skills(raw):
     if pd.isna(raw) or str(raw).strip() == "":
@@ -278,9 +288,14 @@ def load_source2(cur):
         )
         pid, method, conf, flag, matched_name = find_or_create_person(cur, name, email, phone_or_none, city)
 
+        row_corrupted = not looks_like_valid_skills(values.get("skill_tags"))
+        values["_row_corrupted"] = row_corrupted
+
         record_id = insert_source_record(cur, pid, "gig_workers", values)
         log_match(cur, pid, record_id, method, conf, flag, matched_name)
-        upsert_skills(cur, pid, clean_skills(values.get("skill_tags")), "gig_workers")
+
+        if not row_corrupted:
+            upsert_skills(cur, pid, clean_skills(values.get("skill_tags")), "gig_workers")
 
     print(f"source2 (gig_workers): {len(fixed_rows)} rows processed")
 

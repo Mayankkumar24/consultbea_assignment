@@ -1,0 +1,150 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-candidate",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8c2bbaa0-074c-4315-a7ad-71f518645331",
+      "name": "Webhook",
+      "webhookId": "17b2e915-fc6f-4946-bc7d-bb4de773639e"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) AS match_count \nFROM persons \nWHERE canonical_email = '{{ $json.body.email }}' \nOR canonical_phone = '{{ $json.body.phone }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2a031a78-3b7c-4440-9510-048242e2459c",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "yUQtC2KiBsPQ80nR",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "83205220-9533-49d7-92ac-4b582bad494f",
+              "leftValue": "=   {{ $json.match_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "55aeaa9d-1b49-46da-97ae-76e222b1d8d6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Mayankkumar8469@gmail.com",
+        "toEmail": "neerajmayank0542@gmail.com",
+        "subject": "Duplicate Candidate Detected",
+        "html": "=  Duplicate found: {{ $json.canonical_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "147f3cc9-1adc-4d32-b6da-3a65d1d10f47",
+      "name": "Send an Email",
+      "webhookId": "7926b1d8-d120-4bd1-8dca-65b0db95ae86",
+      "credentials": {
+        "smtp": {
+          "id": "31iRMncA16ZGSrTH",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ce4ffd00-9c6b-4afe-b6b4-7b9136e800fe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0101a1303b2fcdb877abc94e6f17cac2c9d9b82ff7f6432b44f25379ef1d801e"
+  },
+  "nodeGroups": [],
+  "id": "bx0tNXMfFCZ0xJxU",
+  "tags": []
+}

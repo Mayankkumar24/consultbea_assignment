@@ -73,8 +73,7 @@ checks it against the `persons` table for an existing match (same logic as
 Task 1's exact-match rules), and either sends an email alert (duplicate
 found) or inserts a new person (no match).
 
-**Where to see it:** [n8n workflow link — add your workflow's shareable/
-read-only link here before submitting]. Demonstrated live in the Loom
+**Where to see it:** [Workflow JSON: [`n8n_workflow.json`](./n8n_workflow.json) — importable directly into any n8n instance for review.]. Demonstrated live in the Loom
 video.
 
 **Why this design:** kept deliberately simple (webhook → Postgres lookup →
@@ -105,7 +104,7 @@ cp .env.example .env
 uvicorn main:app --reload
 ```
 
-**Live demo:** [Render URL — add your deployed URL here before submitting]
+**Live demo:** https://consultbea-assignment.onrender.com
 
 ## Task 4 — Data quality report
 

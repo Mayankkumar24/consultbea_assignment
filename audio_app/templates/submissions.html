@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Submissions</title>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+    th { background: #f4f4f4; }
+    audio { width: 200px; height: 32px; }
+    a { display: inline-block; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <a href="/">&larr; Back to submission form</a>
+  <h2>All Submissions ({{ submissions|length }})</h2>
+
+  <table>
+    <tr>
+      <th>Name</th><th>Phone</th><th>Audio</th>
+      <th>Duration (s)</th><th>Sample Rate (Hz)</th><th>Bitrate (kbps)</th>
+      <th>Loudness (dB)</th><th>Noise Est. (dB)</th><th>Submitted</th>
+    </tr>
+    {% for s in submissions %}
+    <tr>
+      <td>{{ s.name }}</td>
+      <td>{{ s.phone }}</td>
+      <td><audio controls src="/{{ s.file_path }}"></audio></td>
+      <td>{{ s.duration_sec }}</td>
+      <td>{{ s.sample_rate_hz }}</td>
+      <td>{{ s.bitrate_kbps }}</td>
+      <td>{{ s.loudness_db }}</td>
+      <td>{{ s.noise_estimate }}</td>
+      <td>{{ s.submitted_at }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

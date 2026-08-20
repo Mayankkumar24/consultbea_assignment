@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Audio Submission</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    input, button { display: block; width: 100%; margin: 8px 0; padding: 10px; font-size: 15px; box-sizing: border-box; }
+    button { cursor: pointer; }
+    #recordBtn { background: #d9534f; color: white; border: none; border-radius: 4px; }
+    #recordBtn.recording { background: #5cb85c; }
+    #submitBtn { background: #0275d8; color: white; border: none; border-radius: 4px; }
+    #status { color: #666; font-size: 14px; }
+    audio { width: 100%; margin-top: 10px; }
+    a { display: inline-block; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Submit Audio</h2>
+
+  <form id="audioForm">
+    <input type="text" name="name" placeholder="Your name" required>
+    <input type="tel" name="phone" placeholder="Phone number" required>
+
+    <button type="button" id="recordBtn">Start Recording</button>
+    <p id="status"></p>
+    <audio id="preview" controls style="display:none;"></audio>
+
+    <p style="text-align:center; color:#999;">-- OR --</p>
+    <input type="file" id="fileInput" accept="audio/*">
+
+    <button type="submit" id="submitBtn">Submit</button>
+  </form>
+
+  <a href="/submissions">View all submissions &rarr;</a>
+
+  <script>
+    let mediaRecorder, recordedChunks = [], recordedBlob = null;
+    const recordBtn = document.getElementById('recordBtn');
+    const status = document.getElementById('status');
+    const preview = document.getElementById('preview');
+    const fileInput = document.getElementById('fileInput');
+
+    recordBtn.addEventListener('click', async () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        recordBtn.textContent = 'Start Recording';
+        recordBtn.classList.remove('recording');
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+          preview.src = URL.createObjectURL(recordedBlob);
+          preview.style.display = 'block';
+          fileInput.value = '';
+          status.textContent = 'Recording captured.';
+          stream.getTracks().forEach(t => t.stop());
+        };
+        mediaRecorder.start();
+        recordBtn.textContent = 'Stop Recording';
+        recordBtn.classList.add('recording');
+        status.textContent = 'Recording...';
+      } catch (err) {
+        status.textContent = 'Mic access denied or unavailable: ' + err.message;
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        recordedBlob = null;
+        preview.src = URL.createObjectURL(fileInput.files[0]);
+        preview.style.display = 'block';
+        status.textContent = 'File selected.';
+      }
+    });
+
+    document.getElementById('audioForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData();
+      formData.append('name', form.name.value);
+      formData.append('phone', form.phone.value);
+
+      if (fileInput.files.length) {
+        formData.append('audio_file', fileInput.files[0]);
+      } else if (recordedBlob) {
+        formData.append('audio_file', recordedBlob, 'recording.webm');
+      } else {
+        status.textContent = 'Record audio or choose a file first.';
+        return;
+      }
+
+      status.textContent = 'Submitting...';
+      const res = await fetch('/submit', { method: 'POST', body: formData });
+      if (res.redirected) {
+        window.location.href = res.url;
+      } else {
+        status.textContent = 'Submission failed.';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -2,3 +2,9 @@ pandas
 psycopg2-binary
 rapidfuzz
 python-dotenv
+fastapi
+uvicorn[standard]
+python-multipart
+jinja2
+pydub
+numpy
